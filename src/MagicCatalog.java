@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-// enum for SpellType
+// Enum for SpellType
 enum SpellType {
     FIRE(50, "Risky"),
     ICE(40, "Safe"),
@@ -26,9 +26,8 @@ enum SpellType {
     }
 }
 
-// spell class implementing Comparable
+// Spell class implementing Comparable
 class Spell implements Comparable<Spell>, Serializable {
-
     private final String name;
     private final SpellType type;
     private final int powerLevel;
@@ -54,7 +53,16 @@ class Spell implements Comparable<Spell>, Serializable {
     }
 }
 
-// spellbook Collection
+// Custom Comparator for sorting spells by danger level then name
+class SpellComparator implements Comparator<Spell> {
+    @Override
+    public int compare(Spell s1, Spell s2) {
+        int dangerComparison = s1.getType().getDangerLevel().compareTo(s2.getType().getDangerLevel());
+        return (dangerComparison != 0) ? dangerComparison : s1.getName().compareTo(s2.getName());
+    }
+}
+
+// Spellbook Collection
 class Spellbook implements Serializable {
     private final Map<SpellType, List<Spell>> spellsByType = new HashMap<>();
 
@@ -96,6 +104,16 @@ class Spellbook implements Serializable {
                 System.out.println(type + ": " + spells));
     }
 
+    public void spellDuel(Spell s1, Spell s2) {
+        System.out.println("Duel: " + s1.getName() + " vs " + s2.getName());
+        if ((s1.getType() == SpellType.FIRE && s2.getType() == SpellType.ICE) ||
+                (s1.getType() == SpellType.ICE && s2.getType() == SpellType.FIRE)) {
+            System.out.println((s1.getType() == SpellType.FIRE ? s1.getName() : s2.getName()) + " wins! FIRE beats ICE.");
+        } else {
+            System.out.println((s1.getPowerLevel() > s2.getPowerLevel() ? s1.getName() : s2.getName()) + " wins!");
+        }
+    }
+
     public void saveToFile(String filename) throws IOException {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
             out.writeObject(this);
@@ -109,7 +127,7 @@ class Spellbook implements Serializable {
     }
 }
 
-// main class for demonstration
+// Main class for demonstration
 public class MagicCatalog {
     public static void main(String[] args) {
         Spellbook spellbook = new Spellbook();
@@ -129,5 +147,8 @@ public class MagicCatalog {
 
         System.out.println("=== Forbidden Spells Avg Mana Cost ===");
         System.out.println(spellbook.getAverageManaCostForDangerLevel("Forbidden"));
+
+        System.out.println("=== Spell Duel ===");
+        spellbook.spellDuel(new Spell("Fireball", SpellType.FIRE, 80), new Spell("Blizzard", SpellType.ICE, 90));
     }
 }
